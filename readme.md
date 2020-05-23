@@ -48,6 +48,10 @@ object Client {
 The object is initialized only once — during the first call (`Creating StringUtils` is printed only once, after calling `StringUtils.isPalindrome`).
 If the object was not used, the initialization would not occur.
 
+#### Reference
+
+ [Scala tour - singleton objects](https://docs.scala-lang.org/tour/singleton-objects.html)
+
 ### Monostate<a name="monost"></a>
 
 #### Explanation
@@ -59,6 +63,7 @@ This means, that multiple different instances of a single class should share sta
 
 In languages like Java this is easy to implement using static variables (although this is considered a code smell). 
 Since scala does not have the concept of static variables, [companion objects](https://docs.scala-lang.org/tour/singleton-objects.html) can be used.
+(There is a [proposal](https://docs.scala-lang.org/sips/static-members.html) of `@static` annotation for Scala.)
 
 ```Scala
 class Counter {
@@ -88,3 +93,8 @@ test("Instances should share state") {
 Although different instances were created, they share the same state.
 The behavior is the same as of singleton.
 The difference is in how the client code uses it — in monostate the fact, that the state is shared is hidden from the client (constructor is used instead of `object` or `getInstance` method).
+
+#### Reference
+
+Martin, Robert Cecil. Agile Software Development, Principles, Patterns, and Practices. 2002.
+
