@@ -10,6 +10,7 @@
      2. [Adapter](#adapter)
      3. [Composite](#composite)
      4. [Proxy](#proxy)
+     5. [Decorator](#decorator)
  
 ## Creational patterns<a name="cre"></a>
 
