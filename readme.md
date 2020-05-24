@@ -9,6 +9,7 @@
      1. [Facade](#facade)
      2. [Adapter](#adapter)
      3. [Composite](#composite)
+     4. [Proxy](#proxy)
  
 ## Creational patterns<a name="cre"></a>
 
@@ -317,23 +318,76 @@ Any array can be represented as a tree.
 Having a tree we can sort it in the following way:
 
 ```Scala
-  test("Should return sorted array") {
-    val tree = Branch(
+test("Should return sorted array") {
+  val tree = Branch(
+    Branch(
+      Leaf(List(1, 4, 8)),
       Branch(
-        Leaf(List(1, 4, 8)),
-        Branch(
-          Leaf(List(2, 6)),
-          Leaf(List(7))
-        )
-      ),
-      Branch(
-        Leaf(List(3, 9)),
-        Leaf(List(5))
+        Leaf(List(2, 6)),
+        Leaf(List(7))
       )
+    ),
+    Branch(
+      Leaf(List(3, 9)),
+      Leaf(List(5))
     )
-    val sorted = tree.sorted
-    assert(sorted == List(1, 2, 3, 4, 5, 6, 7, 8, 9))
+  )
+  val sorted = tree.sorted
+  assert(sorted == List(1, 2, 3, 4, 5, 6, 7, 8, 9))
+}
+```
+
+#### Reference
+
+ Martin, Robert Cecil. Agile Software Development, Principles, Patterns, and Practices. 2002.
+
+### Proxy<a name="proxy"></a>
+
+#### Explanation
+
+Proxy wraps an object and delegates to it while adding additional logic.
+Most common use cases are restricting access (proxy checks permissions to the underlying object), dirty checking (many ORMs are keeping track of changes in the entities during transaction, so that no unnecessary updates are triggered) or, as in the following example, gathering statistics (proxy counts the number of database accesses).
+
+#### Implementation
+
+Suppose we have a `DataSource` trait, which defines database access.
+
+```Scala
+trait DataSource {
+  def executeQuery(query: String)
+}
+```
+
+`SimpleDataSource` is an object used in production code.
+
+```Scala
+object SimpleDataSource extends DataSource {
+  override def executeQuery(query: String): Unit = println(query)
+}
+```
+
+`CountingDataSource` proxy can be used when testing to keep track of the database load.
+
+object CountingDataSource extends DataSource {
+  private var counter = 0
+  override def executeQuery(query: String): Unit = {
+    counter += 1
+    SimpleDataSource.executeQuery(query)
   }
+  def getNumberOfDbQueries = counter
+}
+
+#### Usage
+
+Every query to the database is recorded.
+This can help avoiding excessive database load problems, for example `N+1` select problem.
+
+```Scala
+test("Should count number of db shots") {
+  CountingDataSource.executeQuery("select * from people;")
+  CountingDataSource.executeQuery("insert into people(id, name) values (1, 'John Doe')")
+  assert(CountingDataSource.getNumberOfDbQueries == 2)
+}
 ```
 
 #### Reference
