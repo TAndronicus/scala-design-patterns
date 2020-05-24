@@ -7,6 +7,7 @@
      3. [Factory method](#factMet)
  2. [Structural](#struct)
      1. [Facade](#facade)
+     2. [Adapter](#adapter)
  
 ## Creational patterns<a name="cre"></a>
 
@@ -197,6 +198,62 @@ test("should transfer money between accounts") {
 ```
 
 Client only needs to invoke `BankingFacade.transfer` function, that takes the responsibility of transactional withdrawal and deposit.
+
+#### Reference
+
+ Martin, Robert Cecil. Agile Software Development, Principles, Patterns, and Practices. 2002.
+
+### Adapter<a name="adapter"></a>
+
+#### Explanation
+
+Adapter is used to facilitate the communication between two systems by providing by providing a common interface.
+An example is connecting to a legacy system, whose API does not conform to ours.
+
+#### Implementation
+
+Suppose our system uses the following trait for services making web requests:
+
+```Scala
+trait WebRequester {
+  def request(obj: Any): String
+}
+```
+
+And we need to integrate an external / legacy service with different API:
+
+```Scala
+class LegacyWebRequester {
+  def sendRequest(json: String) = "200 OK"
+}
+```
+
+With adapter we can wrap the service (adaptee) and expose the target interface to the client:
+
+```Scala
+class WebRequesterAdapter(legacyWebRequester: LegacyWebRequester) extends WebRequester {
+  override def request(obj: Any): String = {
+    val request = toJson(obj)
+    legacyWebRequester.sendRequest(request)
+  }
+  def toJson(obj: Any) = obj.toString
+}
+```
+
+#### Usage
+
+The legacy service needs to be wrapped into the adapter, so that the trait's method can be invoked:
+
+```Scala
+object Client {
+  def main(args: Array[String]): Unit = {
+    val webRequester: WebRequester = new WebRequesterAdapter(new LegacyWebRequester)
+    println(webRequester.request(42))
+  }
+}
+```
+
+In this case the adaptar can instantiate the adaptee, so that it's invisible to the client.
 
 #### Reference
 
