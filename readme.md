@@ -5,6 +5,8 @@
      1. [Singleton](#sin)
      2. [Monostate](#monost)
      3. [Factory method](#factMet)
+ 2. [Structural](#struct)
+     1. [Facade](#fac)
  
 ## Creational patterns<a name="cre"></a>
 
@@ -140,4 +142,62 @@ test("should decide using inheritance") {
 
 Gamma, Erich, et al. Design Patterns: Elements of Reusable Object-Oriented Software. 1994.
 
+## Structural patterns<a name="struct"></a>
 
+### Singleton<a name="fac"></a>
+
+#### Explanation
+
+Facade eases the usage of some complex API.
+
+#### Implementation
+
+Suppose we have a service for the deposit and withdrawal of money and lookup of balance:
+
+```Scala
+object BankingService {
+  val accountsBalance: mutable.Map[Int, Double] = mutable.Map().withDefaultValue(0)
+
+  def deposit(accountId: Int, amount: Double) = accountsBalance.update(accountId, accountsBalance.getOrElse(accountId, 0d) + amount)
+  def withdraw(accountId: Int, amount: Double) = accountsBalance.update(accountId, accountsBalance.getOrElse(accountId, 0d) - amount)
+  def getBalance(accountId: Int) = accountsBalance(accountId)
+}
+```
+
+Transferring money between accounts would require the client to subsequently call `BankingService.withdraw` and `BankingService.deposit` and make sure both run within a single transaction, so that no money is lost.
+We can provide a facade, that eases takes the responsibility of transferring and easing API usage:
+
+```Scala
+object BankingFacade {
+  def transfer(from: Int, to: Int, amount: Double) = {
+    withinTransaction {
+      BankingService.withdraw(from, amount)
+      BankingService.deposit(to, amount)
+    }
+  }
+  // dummy method that should wrap a transaction context
+  private def withinTransaction(r: => Unit) = r
+}
+```
+
+Now all there operations are as easy as invoking `BankingFacade.transfer`.
+
+#### Usage
+
+```Scala
+before {
+  BankingService.deposit(1, 100)
+  BankingService.deposit(2, 100)
+}
+
+test("should transfer money between accounts") {
+  BankingFacade.transfer(1, 2, 25)
+  assert(BankingService.getBalance(2) == 125d)
+}
+```
+
+Client only needs to invoke `BankingFacade.transfer` function, that takes the responsibility of transactional withdrawal and deposit.
+
+#### Reference
+
+ Martin, Robert Cecil. Agile Software Development, Principles, Patterns, and Practices. 2002.
