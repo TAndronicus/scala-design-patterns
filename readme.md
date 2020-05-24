@@ -368,6 +368,7 @@ object SimpleDataSource extends DataSource {
 
 `CountingDataSource` proxy can be used when testing to keep track of the database load.
 
+```Scala
 object CountingDataSource extends DataSource {
   private var counter = 0
   override def executeQuery(query: String): Unit = {
@@ -376,6 +377,7 @@ object CountingDataSource extends DataSource {
   }
   def getNumberOfDbQueries = counter
 }
+```
 
 #### Usage
 
@@ -387,6 +389,79 @@ test("Should count number of db shots") {
   CountingDataSource.executeQuery("select * from people;")
   CountingDataSource.executeQuery("insert into people(id, name) values (1, 'John Doe')")
   assert(CountingDataSource.getNumberOfDbQueries == 2)
+}
+```
+
+#### Reference
+
+ Martin, Robert Cecil. Agile Software Development, Principles, Patterns, and Practices. 2002.
+ 
+### Decorator<a name="decorator"></a>
+
+#### Explanation
+
+Decorator allows stacking implementations to add additional features at runtime.
+
+#### Implementation
+
+Suppose we have a `WebPage` interface:
+
+```Scala
+trait WebPage {
+  def render();
+}
+```
+
+And its implementation:
+
+```Scala
+class SimpleWebPage extends WebPage {
+  override def render(): Unit = println("Rendered page")
+}
+```
+
+We can define an interface for the decorators.
+The decorator delegates the basic logic to the object it decorates.
+
+```Scala
+abstract class WebPageDecorator(webPage: WebPage) extends WebPage {
+  override def render(): Unit = webPage.render()
+}
+```
+
+Now decorators can be implemented to decorate `SimpleWebPage` with additional logic:
+
+```Scala
+class AuthorizedWebPage(webPage: WebPage) extends WebPageDecorator(webPage) {
+  override def render(): Unit = {
+    super.render()
+    println("Authorizing...")
+  }
+}
+
+class AuthenticatedWebPage(webPage: WebPage) extends WebPageDecorator(webPage) {
+  override def render(): Unit = {
+    super.render()
+    println("Authenticating...")
+  }
+}
+```
+
+#### Usage
+
+When decorating `SimpleWebPage` and running `render`, the implementations from subsequent decorators is invoked:
+
+```Scala
+object Client {
+
+  def main(args: Array[String]): Unit = {
+    val webPage = new AuthenticatedWebPage(new AuthorizedWebPage(new SimpleWebPage))
+    webPage.render()
+    // Rendered page
+    // Authorizing...
+    // Authenticating...
+  }
+
 }
 ```
 
