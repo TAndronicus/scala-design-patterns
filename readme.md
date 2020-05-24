@@ -4,6 +4,7 @@
  1. [Creational](#cre)
      1. [Singleton](#sin)
      2. [Monostate](#monost)
+     3. [Factory method](#factMet)
  
 ## Creational patterns<a name="cre"></a>
 
@@ -20,12 +21,10 @@ In Scala singleton can be created using the `object` keyword:
 
 ```Scala
 object StringUtils {
-
   println("Creating StringUtils")
 
   def isPalindrome(s: String) = s.zip(s.reverse)
     .forall { case (c1, c2) => c1 == c2 }
-
 }
 ```
 
@@ -50,7 +49,8 @@ If the object was not used, the initialization would not occur.
 
 #### Reference
 
- [Scala tour - singleton objects](https://docs.scala-lang.org/tour/singleton-objects.html)
+ 1. [Scala tour - singleton objects](https://docs.scala-lang.org/tour/singleton-objects.html)
+ 2. Martin, Robert Cecil. Agile Software Development, Principles, Patterns, and Practices. 2002.
 
 ### Monostate<a name="monost"></a>
 
@@ -67,10 +67,8 @@ Since scala does not have the concept of static variables, [companion objects](h
 
 ```Scala
 class Counter {
-
   def increment = Counter.x += 1
   def get = Counter.x
-
 }
 
 object Counter {
@@ -93,8 +91,53 @@ test("Instances should share state") {
 Although different instances were created, they share the same state.
 The behavior is the same as of singleton.
 The difference is in how the client code uses it — in monostate the fact, that the state is shared is hidden from the client (constructor is used instead of `object` or `getInstance` method).
+Singleton fulfills the definition with the property of multiple instances relaxed.
 
 #### Reference
 
 Martin, Robert Cecil. Agile Software Development, Principles, Patterns, and Practices. 2002.
+
+### Factory method<a name="factMet"></a>
+
+#### Explanation
+
+Factory method implements logic associated with creating subclasses of a certain class.
+
+#### Implementation
+
+Consider the following type hierarchy:
+
+```Scala
+sealed abstract class Shape
+case class Circle(radius: Double) extends Shape
+case class Square(side: Double) extends Shape
+```
+
+The creation is declared in `ShapeProvider` interface and implemented in `CircleProvider` and `SquareProvider`:
+
+```Scala
+trait ShapeProvider {
+  def getShape(diameter: Double): Shape
+}
+class CircleProvider extends ShapeProvider {
+  override def getShape(diameter: Double): Shape = Circle(diameter / 2)
+}
+class SquareProvider extends ShapeProvider {
+  override def getShape(diameter: Double): Shape = Square(diameter / math.sqrt(2))
+}
+```
+
+#### Usage
+
+```Scala
+test("should decide using inheritance") {
+  val shape = new SquareProvider().getShape(.5)
+  assert(shape.isInstanceOf[Square])
+}
+```
+
+#### Reference
+
+Gamma, Erich, et al. Design Patterns: Elements of Reusable Object-Oriented Software. 1994.
+
 
