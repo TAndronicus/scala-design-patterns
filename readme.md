@@ -240,6 +240,21 @@ class WebRequesterAdapter(legacyWebRequester: LegacyWebRequester) extends WebReq
 }
 ```
 
+In this case the service is stateless, so we can leverage Scala's singleton `object`:
+
+```Scala
+object StatelessWebRequesterAdapter extends WebRequester {
+  val legacyWebRequester = new LegacyWebRequester
+  override def request(obj: Any): String = {
+    val request = toJson(obj)
+    legacyWebRequester.sendRequest(request)
+  }
+  def toJson(obj: Any) = obj.toString
+}
+```
+
+This will provide a single entry for the legacy module.
+
 #### Usage
 
 The legacy service needs to be wrapped into the adapter, so that the trait's method can be invoked:
@@ -249,6 +264,7 @@ object Client {
   def main(args: Array[String]): Unit = {
     val webRequester: WebRequester = new WebRequesterAdapter(new LegacyWebRequester)
     println(webRequester.request(42))
+    println(StatelessWebRequesterAdapter.request(42))
   }
 }
 ```
