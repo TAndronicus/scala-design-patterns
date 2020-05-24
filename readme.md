@@ -6,7 +6,7 @@
      2. [Monostate](#monost)
      3. [Factory method](#factMet)
  2. [Structural](#struct)
-     1. [Facade](#fac)
+     1. [Facade](#facade)
  
 ## Creational patterns<a name="cre"></a>
 
@@ -144,7 +144,7 @@ Gamma, Erich, et al. Design Patterns: Elements of Reusable Object-Oriented Softw
 
 ## Structural patterns<a name="struct"></a>
 
-### Singleton<a name="fac"></a>
+### Facade<a name="facade"></a>
 
 #### Explanation
 
