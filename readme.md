@@ -8,6 +8,7 @@
  2. [Structural](#struct)
      1. [Facade](#facade)
      2. [Adapter](#adapter)
+     3. [Composite](#composite)
  
 ## Creational patterns<a name="cre"></a>
 
@@ -270,6 +271,70 @@ object Client {
 ```
 
 In this case the adaptar can instantiate the adaptee, so that it's invisible to the client.
+
+#### Reference
+
+ Martin, Robert Cecil. Agile Software Development, Principles, Patterns, and Practices. 2002.
+
+### Composite<a name="composite"></a>
+
+#### Explanation
+
+Composite pattern allows nesting structures and dealing with them uniformly.
+
+#### Implementation
+
+A great example of composite pattern is a tree.
+A tree can be a leaf or a branch, which itself is also a tree (a subtree of it root).
+The following snippet is an example of binary tree used to sort an array stored in leaves.
+
+```Scala
+sealed abstract class BinaryTree {
+  def sorted: List[Double]
+}
+case class Branch(left: BinaryTree, right: BinaryTree) extends BinaryTree {
+  override def sorted: List[Double] = sortRecursively(left.sorted, right.sorted)
+  private def sortRecursively(left: List[Double], right: List[Double]): List[Double] = {
+    if (left.isEmpty && right.isEmpty) List()
+    else if (left.isEmpty) right.sorted
+    else if (right.isEmpty) left.sorted
+    else if (left.head <= right.head) left.head :: sortRecursively(left.tail, right)
+    else right.head :: sortRecursively(left, right.tail)
+  }
+}
+case class Leaf(ar: List[Double]) extends BinaryTree {
+  override def sorted: List[Double] = ar.sorted
+}
+```
+
+Both `Branch` and `Leaf` can be sorted.
+This is a common behavior defined in the abstract superclass `BinaryTree`.
+Array sorting is done recursively and propagates from root to leaves.
+
+#### Usage
+
+Any array can be represented as a tree.
+Having a tree we can sort it in the following way:
+
+```Scala
+  test("Should return sorted array") {
+    val tree = Branch(
+      Branch(
+        Leaf(List(1, 4, 8)),
+        Branch(
+          Leaf(List(2, 6)),
+          Leaf(List(7))
+        )
+      ),
+      Branch(
+        Leaf(List(3, 9)),
+        Leaf(List(5))
+      )
+    )
+    val sorted = tree.sorted
+    assert(sorted == List(1, 2, 3, 4, 5, 6, 7, 8, 9))
+  }
+```
 
 #### Reference
 
