@@ -11,6 +11,8 @@
      3. [Composite](#composite)
      4. [Proxy](#proxy)
      5. [Decorator](#decorator)
+ 3. [Behavioral](#behav)
+    1. [Template method](#tempmet)
  
 ## Creational patterns<a name="cre"></a>
 
@@ -463,6 +465,85 @@ object Client {
     // Authenticating...
   }
 
+}
+```
+
+#### Reference
+
+ Martin, Robert Cecil. Agile Software Development, Principles, Patterns, and Practices. 2002.
+ 
+## Behavioral patterns<a name="behav"></a>
+
+### Template method<a name="tempmet"></a>
+
+#### Explanation
+
+Template method defines a general algorithm, a scaffold, that is further implemented the subclasses.
+It abstracts a pattern that is common among the subclasses
+
+
+#### Implementation
+
+Suppose we would like to have different services for user notification.
+There are multiple channels: emails, SMS, etc.
+Each service performs the same general algorithm: checking whether the user is subscribed to this channel and sending the notification.
+The implementation can differ.
+
+The scaffold is defined in a trait.
+
+```Scala
+trait NotificationService {
+
+  protected def isSubscribed(userId: Long): Boolean
+
+  protected def sendNotification(userId: Long): Unit
+
+  def notifyUser(userId: Long): Unit = {
+    if (isSubscribed(userId)) sendNotification(userId)
+    else println("User not subscribed")
+  }
+}
+```
+
+The notification logic is already defined, since it is the same for every channel.
+The implementations only differ in `isSubscribed` and `sendNotification` methods.
+
+```Scala
+object EmailNotifier extends NotificationService {
+
+  override protected def isSubscribed(userId: Long): Boolean = isSubscribedToEmail(userId)
+
+  override protected def sendNotification(userId: Long): Unit = sendEmail(userId)
+
+  private def sendEmail(userId: Long): Unit = println(s"Email to user ${userId}")
+
+  private def isSubscribedToEmail(userId: Long): Boolean = userId == 0
+}
+
+object WebpageNotifier extends NotificationService {
+
+  override protected def isSubscribed(userId: Long): Boolean = isSubscribedToSms(userId)
+
+  override protected def sendNotification(userId: Long): Unit = sendSms(userId)
+
+  private def sendSms(userId: Long): Unit = println(s"SMS to user ${userId}")
+
+  private def isSubscribedToSms(userId: Long): Boolean = userId == 1
+}
+```
+
+#### Usage
+
+The client only needs to invoke the template method defined in the trait.
+
+```Scala
+object Client {
+  
+  def main(args: Array[String]): Unit = {
+    EmailNotifier.notifyUser(1)
+    WebpageNotifier.notifyUser(1)
+  }
+  
 }
 ```
 
